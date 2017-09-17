@@ -1,5 +1,7 @@
 # -*- coding: latin-1 -*-
 import math
+
+#retorna uma letra do alfabeto no índice
 def alfabeto(n):
 	a = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']
 	return a[n]
@@ -10,19 +12,15 @@ def barra():
 def geraGrafo(x):
 	g = []
 	l1 = []
-	if x > 5:
-		l2 = []
+	l2 = []
 	for i in range(0, x):
-		if i < 5:
+		if i < x/2:
 			l1.append(alfabeto(i))
 		else:
 			l2.append(alfabeto(i))
-	if x >= 5:
-		g.append(l1)
-		g.append(l2)
-	else:
-		g.append(l1)
-
+	
+	g.append(l1)
+	g.append(l2)
 	return g
 
 def printaGrafo(grafo):
@@ -76,7 +74,7 @@ v = 1
 sair = False
 
 while not sair:
-	if len(grafo[0]) == 1:
+	if len(grafo[0]) <= 1:
 		print 'Não existem vértices suficientes para percorrer'
 		quit()
 	c = 0
