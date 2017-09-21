@@ -25,7 +25,7 @@ def matrizAdj(x):
 	for i in range(0, x):
 		#itera pela segunda variavel de controle (i2) de 0 até i e empurra 0 no final da lista pelo número de vezes
 		#igual a coluna que está sendo iterada (i), de modo que se gere a matriz de adjacências reduzida
-		for i2 in range(0, i):
+		for i2 in range(0, i+1):
 			m.append(0)
 		#empurra a sublista na superlista de forma que se faça uma lista de linhas e colunas (ou matriz, se preferir)
 		M.append(m)
@@ -69,6 +69,26 @@ def printaGrafo(grafo):
 			print l,
 			if i == len(g) - 1:
 				print ''
+
+
+def printaAdj(adj):
+	fim = len(adj[len(adj) -1])
+	print '  ',
+	for b in range(0, fim):
+		print alfabeto(b)+' ',
+	print ''
+	for i1, a in enumerate(adj):
+		for i2, l in enumerate(a):
+			if i2 == 0:
+				print alfabeto(i1)+' ',
+			if l == math.sqrt(2):
+				print '√2',
+			else:
+				print l,
+				print '',
+			if i2 == len(a) - 1:
+				print ''
+
 #itera sobre as linhas do grafo e procura pelo vértice passado por parâmetro
 def procuraVertice(grafo, elem, v=False):
 	c = 0
@@ -83,6 +103,14 @@ def procuraVertice(grafo, elem, v=False):
 					return True
 			c +=1
 	return False
+
+def getCoord(grafo, elem):
+	c = 0
+	for g in grafo:
+		for l in g:
+			if elem == l:
+				return c
+			c +=1
 
 #itera sobre o grafo checa se os dois vértices passados por parâmetro são vizinhos (necessário para estabelecer uma aresta)
 def checaVizinho(grafo, v1, v2):
@@ -101,27 +129,47 @@ def checaVizinho(grafo, v1, v2):
 		return True
 	else:
 		return False
+
+
+def checaDiag(grafo, v1, v2):
+	#itera sobre o grafo e testa para diagonalidade (vizinhos horizontais e diagonais retornam o mesmo valor)
+	i1 = -1
+	i2 = -1
+	d1 = 0
+	d2 = 0
+	e1 = 0
+	e = 0
+	for e1, g in enumerate(grafo):
+		for e, l in enumerate(g):
+			if l == v1:
+				i1 = e
+				d1 = e1
+			if l == v2:
+				i2 = e
+				d2 = e1
+	
+	if d1 != d2:
+		return i1, i2, True
+	else:
+		return i1, i2, False
+
 #preenche matriz de adjs de acordo com a aresta passada por parâmetro
 def preencheAdj(grafo, adj, v1, v2):
 	#procura os vértices no grafo e retorna a posição deles na matris de adjs
-	x, a = procuraVertice(grafo, v1, True)
-	y, b = procuraVertice(grafo, v2, True)
+	x = getCoord(grafo, v1)
+	y = getCoord(grafo, v2)
 
-	#itera sobre o grafo e testa para diagonalidade (vizinhos horizontais e diagonais retornam o mesmo valor)
-	for g in grafo:
-		for i, l in enumerate(g):
-			if l == v1:
-				i1 = i
-			if l == v2:
-				i2 = i
-		d = True
+	i1, i2, d = checaDiag(grafo, v1, v2)
 
 	#atribui o valor proprio para a aresta (raiz(2) para diagonais e 1 para verticais e horizontais)
+
 	if i1 - i2 == 1 and d:
-		val = math.sqrt(2) 
+		val = math.sqrt(2)
+		# val = 2 
 	elif i1 - i2 == -1 and d:
 		val = math.sqrt(2)
-	elif i1 - i2 == 0: 
+		# val = 2
+	elif i1 - i2 == 0:
 		val = 1
 	elif i1 - i2 == 1: 
 		val = 1
@@ -132,19 +180,21 @@ def preencheAdj(grafo, adj, v1, v2):
 	if y < x:
 		#testa se aresta ja foi colocada antes
 		if adj[x][y] > 0:
-			print 'Aresta já existente'
-			pause()
+			return False, adj
 		#caso contrario preenche a matriz com seu respectivo valor em seu respectivo lugar
 		else:
 			adj[x][y] = val
 	else:
 		if adj[y][x] > 0:
-			print 'Aresta já existente'
-			pause()
+			return False, adj
 		else:
 			adj[y][x] = val
 	#retorna a matriz atualizada com a aresta
-	return adj
+	return True, adj
+
+#printa grafo com as arestas desenhadas
+def grafoFormatado(grafo, adj):
+	pass
 
 
 #prompta o usuário com a quantidade de vértices que queira usar
@@ -172,6 +222,7 @@ sair = False
 #limpa a tela
 os.system('clear')
 
+arestas = {}
 #repete enquanto o lock estiver trancado
 while not sair:
 	#caso não haja vértices suficientes para percorrer, termina-se a execução
@@ -194,7 +245,6 @@ while not sair:
 		if not procuraVertice(grafo, opt):
 			os.system('clear')
 			print 'Vértice não encontrado.'
-			barra()
 		#caso seja encontrado, grava a opção desejada e quebra o laço
 		else:	
 			opt1 = opt
@@ -216,31 +266,259 @@ while not sair:
 		if not procuraVertice(grafo, opt):
 			os.system('clear')
 			print 'Vértice não encontrado.'
-			barra()
 		else:
 			opt2 = opt
+			os.system('clear')
 			break
 	#enquanto o lock estiver trancado
 	if not sair:
 		#checa se a vizinhança entre as duas opções é real
 		if checaVizinho(grafo, opt1, opt2):
-			print ''
-			#prompta o usuário á confirmar a aresta
-			opt = raw_input('Aresta é v'+str(v)+'('+opt1+', '+opt2+'). Entre "S" para confirmar ou "N" para descartar. Entre com "Z" para encerrar: ')
-			#se o usuário entrar com z encerra a rotina das arestas
-			if opt.lower() == 'z':
-				sair = True
-				break
-			#caso entre com s preenche a matriz de adjs no lugar correto
-			if opt.lower() == 's':
+			check, adjs = preencheAdj(grafo, adjs, opt1, opt2)
+
+			if not check:
 				os.system('clear')
-				adjs = preencheAdj(grafo, adjs, opt1, opt2)
-				#printa a matriz só pra teste
-				printaGrafo(adjs)
+
+				print 'Aresta já existente.'
+			else:
+				arestas['v'+str(v)] = [opt1, opt2]
 				#variavel usada para notificar o usuário que a aresta é outra
 				v += 1
 		#avisa o usuário caso os vértices não sejam vizinhos
 		else:
 			os.system('clear')
 			print 'Vertices "'+opt1+'"" e "'+opt2+ '" não são vizinhos.'
-			
+		
+os.system('clear')
+while True:
+	barra()
+	printaGrafo(grafo)
+	barra()
+	inicio = raw_input('Selecione o ponto inicial: ')
+	if procuraVertice(grafo, inicio):
+		break
+	else:
+		os.system('clear')
+		print 'Vértice não encontrado.'
+		barra()
+
+while True:
+	barra()
+	printaGrafo(grafo)
+	barra()
+	final = raw_input('Selecione o ponto final: ')
+	if procuraVertice(grafo, inicio):
+		break
+	else:
+		os.system('clear')
+		print 'Vértice não encontrado.'
+
+def geraLAberturas(v):
+	ab = {}
+	for i1, g in enumerate(adjs):
+		for i2, l in enumerate(g):
+			if l > 0:
+				if alfabeto(i1) not in ab:
+					ab[alfabeto(i1)] = True
+				if alfabeto(i2) not in ab:
+					ab[alfabeto(i2)] = True
+					
+	return ab
+
+def geraLAntecessores(v):
+	ant = {}
+	for i1, g in enumerate(adjs):
+		for i2, l in enumerate(g):
+			if l > 0:
+				if alfabeto(i1) not in ant:
+					ant[alfabeto(i1)] = None
+				if alfabeto(i2) not in ant:
+					ant[alfabeto(i2)] = None
+	return ant
+
+def geraLRelax(v):
+	rel = {}
+	for i1, g in enumerate(adjs):
+		for i2, l in enumerate(g):
+			if l > 0:
+				if alfabeto(i1) not in rel:
+					rel[alfabeto(i1)] = 999999999
+				if alfabeto(i2) not in rel:
+					rel[alfabeto(i2)] = 999999999
+	return rel
+
+def relax(peso, v1, v2):
+	#print v1
+	#print v2
+	if relaxVal[v1] + peso < relaxVal[v2]:
+		relaxVal[v2] = relaxVal[v1] + peso
+		listaAnt[v2] = v1
+
+
+
+def fecha(ab, key):
+	ab[key] = False
+	return ab
+
+def isAberto(ab, key):
+	if ab[key]:
+		return True
+	else:
+		return False
+
+def checaAbertura(ab, get=False):
+	for key in ab:
+		if ab[key] == True:
+			if not get:
+				return True
+			else:
+				return key
+
+def procuraVerticePorCount(grafo, c):
+	cr = 0
+	for g in grafo:
+		for l in g:
+			if c == cr:
+				return l
+			cr += 1
+
+def getMenor(rel, ab):
+	abertos = {}
+	for key in rel:
+		if isAberto(ab, key):
+			abertos[key] = rel[key]
+
+	menor = min(abertos.itervalues())
+	for key in abertos:
+		if abertos[key] == menor:
+			return key 
+	return False
+
+def showCaminho(ant, inicio, fim):
+	at = fim
+	cam = []
+	cam.append(fim)
+	while True:
+		if ant[at] == None:
+			if at != inicio:
+				return None, False
+			else:
+				break
+		at = ant[at]
+		cam.append(at)
+		if at == inicio:
+			break
+	l = []
+	for i in reversed(cam):
+		l.append(i)
+	return l, True
+
+def getDistancia(fim, rel):
+	return rel[fim]
+
+def getManhattan(inicio, fim, grafo):
+	x=[]
+	y=[]
+	for e1, g in enumerate(grafo):
+		for e, l in enumerate(g):
+			if l == inicio or l == fim:
+				x.append(e)
+				y.append(e1)
+
+	xx = modulo(x[0] - x[1])
+	yy = modulo(y[0] - y[1])
+	a = xx + yy
+	return a
+
+def modulo(numero):
+	if numero < 0:
+		return numero * -1
+	else:
+		return numero
+
+listaAb = geraLAberturas(vertices)
+listaAnt = geraLAntecessores(vertices)
+relaxVal = geraLRelax(vertices)
+
+
+
+if inicio == final:
+	os.system('clear')
+	print 'Caminho: '+final
+	print 'Distância percorrida: 0'
+	print 'Distância Manhattan: 0'
+	print 'Matriz de adjacências minimizada: '
+	printaAdj(adjs)
+	print 'Algoritmo usado: Dijkstra'
+else:
+	somaCaminho = 0
+	relaxVal[inicio] = 0
+	while checaAbertura(listaAb) and isAberto(listaAb, final):
+		atual = getMenor(relaxVal, listaAb)
+		fecha(listaAb, atual)
+		coord = getCoord(grafo, atual)
+		i2= 0
+		i= 0
+		for i, g in enumerate(adjs):
+
+			# print 'index', i
+			# print 'coord', coord
+
+			# if i == coord:
+			# 	if adjs[i][coord - 1] > 0:
+			# 		proxPeso = adjs[i][coord - 1]
+			# 		prox = procuraVerticePorCount(grafo, coord - 1)
+			# 		if isAberto(listaAb, prox):
+			# 			relaxVal[prox] = relax(relaxVal, proxPeso, atual, prox)
+			# 			listaAnt[prox] = atual
+			# 			print 'fez', prox
+
+			# if i > coord:
+			# 	if adjs[i][coord] > 0:
+			# 		proxPeso = adjs[i][coord]
+			# 		prox = procuraVerticePorCount(grafo, i)
+			# 		if isAberto(listaAb, prox):
+			# 			if prox == 'e': print 'CHEOGO PORRA VAI FAZE SIM'
+			# 			relaxVal[prox] = relax(relaxVal, proxPeso, atual, prox)
+			# 			listaAnt[prox] = atual
+			# 			print 'fez ', prox
+
+
+			try:
+				for i2, l in enumerate(g):
+					if i == coord:
+						if l > 0:
+							proxPeso = l
+					 		prox = procuraVerticePorCount(grafo, i2)
+					 		if isAberto(listaAb, prox):
+					 			# listaAb[prox], relaxVal[prox] = relax(relaxVal, proxPeso, atual, prox)
+					 			relax(proxPeso, atual, prox)
+
+					elif i2 == coord:
+						if l > 0:
+							proxPeso = l
+							prox = procuraVerticePorCount(grafo, i)
+							if isAberto(listaAb, prox):
+								# listaAb[prox], relaxVal[prox] = relax(relaxVal, proxPeso, atual, prox)
+					 			relax(proxPeso, atual, prox)
+
+			except IndexError:
+				pass
+
+	printaGrafo(grafo)
+
+	caminho, achou = showCaminho(listaAnt, inicio, final)
+
+	if not achou:
+		os.system('clear')
+		print 'Inicial e final em árvores diferentes. Caminho impossível.'
+	else:
+		os.system('clear')
+		print 'Algoritmo usado: Dijkstra'
+		print 'Caminho:', caminho
+		print 'Distância percorrida:'+str(getDistancia(final, relaxVal))
+		print 'Distância Manhattan:', getManhattan(inicio, final, grafo)
+		print 'Lista de arestas:', arestas
+		print 'Matriz de adjacências minimizada: '
+		printaAdj(adjs)
+		print ''
