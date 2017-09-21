@@ -1,6 +1,5 @@
 # -*- coding: latin-1 -*-
 #IA monstrona pra percorrer um grafo
-#Autor: emão z1k4 (tenho que mudar o nome antes de entregar)
 import math
 import os
 
